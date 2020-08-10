@@ -1,6 +1,9 @@
 package com.example.liang.vocabularyhelper;
 
 import android.content.Context;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -24,45 +27,32 @@ public class TranslateUtils {
     //private Context mContext;
     private TransApi transApi;
     private Thread networkThread;
+    final int COMPLETED = 0;
     TranslateUtils(/*Context context*/){
         String appid="20170407000044348";
         String securityKey="x9gxoX9VbrGvqZj8G51H";
-        //mContext=context;
         transApi=new TransApi(appid,securityKey);
     }
-    public void translate(final String source, final EditText etTarget, final TextView tvStatus){
-        if(source.equals("")) {
-            etTarget.setText("");
-            tvStatus.setVisibility(View.INVISIBLE);
-            return;
-        }
-        /*String translation;
-        while ((translation=getTranslation(source))==null)
-            continue;*/
+    public void translate(final String source, final Handler handler){
         new Thread(new Runnable() {
             @Override
             public void run() {
                 //tvStatus.setVisibility(View.VISIBLE);
                 try {
-                    etTarget.setText(getTranslation(source));
-                    etTarget.selectAll();
-                    tvStatus.setVisibility(View.INVISIBLE);
+                    Message message=Message.obtain();
+                    Bundle bundle=new Bundle();
+                    if(source.equals(""))
+                        bundle.putString("result","");
+                    else
+                        bundle.putString("result",getTranslation(source));//TODO null处理
+                    message.setData(bundle);
+                    message.what=COMPLETED;
+                    handler.sendMessage(message);
                 }catch (Exception e){
                     e.printStackTrace();
                 }
             }
         }).start();
-        /*if(networkThread!=null){
-            networkThread.interrupt();
-            Log.d("TranslateDebug Thread", "interrupted");
-        }
-        networkThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-            }
-        });*/
-//        networkThread.start();
     }
 
     private String getTranslation(String source){

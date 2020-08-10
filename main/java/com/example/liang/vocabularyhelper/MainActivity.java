@@ -2,6 +2,8 @@ package com.example.liang.vocabularyhelper;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.text.Editable;
@@ -71,6 +73,7 @@ public class MainActivity extends AppCompatActivity
         adapter = new SimpleAdapter(MainActivity.this, lists, R.layout.item_template, new String[]{"words","meanings"}, new int[]{R.id.lis_word,R.id.lis_meaning});
         listView = findViewById(R.id.listview);
         listView.setAdapter(adapter);
+        ((NavigationView)findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_quickadd);
 
         initEvent();
     }
@@ -92,49 +95,29 @@ public class MainActivity extends AppCompatActivity
                 return false;
             }
         });
-        /*final Thread[] translateThread = {null};
-        ((EditText)findViewById(R.id.etWord)).addTextChangedListener(new TextWatcher() {
+        final int COMPLETED = 0;
+        final Handler handler = new Handler(){
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
+            public void handleMessage(Message msg) {
+                if (msg.what == COMPLETED) {
+                    ((EditText) findViewById(R.id.etMeaning)).setText(msg.getData().getString("result"));
+                    ((EditText) findViewById(R.id.etMeaning)).selectAll();
+                    findViewById(R.id.tvStatus).setVisibility(View.INVISIBLE);
+                }
             }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(final Editable editable) {
-                if(translateThread[0] !=null)//&& translateThread[0].isAlive())
-                    translateThread[0].interrupt();
-                translateThread[0] =new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        translateUtils.translate(editable.toString(),(EditText)findViewById(R.id.etMeaning));
-                    }
-                });
-                translateThread[0].start();
-
-                //((EditText)findViewById(R.id.etMeaning)).setText(translateUtils.translate(editable.toString()));
-            }
-        });*/
+        };
         findViewById(R.id.etMeaning).setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
                 if(b) {
                     findViewById(R.id.tvStatus).setVisibility(View.VISIBLE);
-                    translateUtils.translate(((EditText) findViewById(R.id.etWord)).getText().toString(), (EditText) findViewById(R.id.etMeaning), (TextView) findViewById(R.id.tvStatus));
+                    translateUtils.translate(((EditText) findViewById(R.id.etWord)).getText().toString(),handler);
                 }
             }
         });
 
     }
+
 
     @Override
     public void onBackPressed() {
@@ -174,7 +157,7 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        /*if (id == R.id.nav_camera) {
             // Handle the camera action
         } else if (id == R.id.nav_gallery) {
 
@@ -186,7 +169,7 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_send) {
 
-        }
+        }*/
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
