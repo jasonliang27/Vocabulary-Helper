@@ -1,15 +1,10 @@
 package com.example.liang.vocabularyhelper;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.TextView;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.security.MessageDigest;
@@ -17,7 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TranslateUtils {
+class TranslateUtils {
     /*http://api.fanyi.baidu.com/
     APP ID：20170407000044348
     密钥：x9gxoX9VbrGvqZj8G51H
@@ -27,13 +22,14 @@ public class TranslateUtils {
     //private Context mContext;
     private TransApi transApi;
     private Thread networkThread;
-    final int COMPLETED = 0;
+    private final int COMPLETED = 0;
     TranslateUtils(/*Context context*/){
         String appid="20170407000044348";
         String securityKey="x9gxoX9VbrGvqZj8G51H";
         transApi=new TransApi(appid,securityKey);
     }
-    public void translate(final String source, final Handler handler){
+
+    void translate(final String source, final Handler handler) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -75,19 +71,19 @@ public class TranslateUtils {
         private String appid;
         private String securityKey;
 
-        public TransApi(String appid, String securityKey) {
+        TransApi(String appid, String securityKey) {
             this.appid = appid;
             this.securityKey = securityKey;
         }
 
-        public String getTransResult(String query, String from, String to) {
-            Map<String, String> params = null;
+        String getTransResult(String query, String from, String to) {
+            Map<String, String> params;
             params = buildParams(query, from, to);
             return HttpGet.get(TRANS_API_HOST, params);
         }
 
         private Map<String, String> buildParams(String query, String from, String to) {
-            Map<String, String> params = new HashMap<String, String>();
+            Map<String, String> params = new HashMap<>();
             params.put("q", query);
             params.put("from", from);
             params.put("to", to);
@@ -115,12 +111,12 @@ public class TranslateUtils {
 
     public static class Hash {
 
-        public static String md5(String input) throws NoSuchAlgorithmException {
+        static String md5(String input) throws NoSuchAlgorithmException {
             byte[] bytes = MessageDigest.getInstance("MD5").digest(input.getBytes());
             return printHexBinary(bytes);
         }
 
-        public static String printHexBinary(byte[] data) {
+        static String printHexBinary(byte[] data) {
             StringBuilder r = new StringBuilder(data.length * 2);
             for (byte b : data) {
                 r.append(String.format("%02X", b & 0xFF));

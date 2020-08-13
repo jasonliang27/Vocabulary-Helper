@@ -1,13 +1,12 @@
 package com.example.liang.vocabularyhelper;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -19,8 +18,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.inputmethod.EditorInfo;
-import android.widget.Button;
+import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -38,6 +38,10 @@ public class MainActivity extends AppCompatActivity
     private SimpleAdapter adapter;
     private ListView listView;
     EditText etWord,etMeaning;
+    boolean isAutoTranslate;
+    View.OnFocusChangeListener etMeaningOnFocusChangeListener;
+    Handler translateHandler;
+    ModiDiaBuilder modiDiaBuilder;
 
 
     @Override
@@ -78,8 +82,10 @@ public class MainActivity extends AppCompatActivity
         initEvent();
     }
 
+    @SuppressLint("HandlerLeak")
     public void initEvent(){
         final TranslateUtils translateUtils=new TranslateUtils();
+        isAutoTranslate = getSharedPreferences("data", MODE_PRIVATE).getBoolean("isAutoTranslate", true);
         //按钮监听
         findViewById(R.id.btnAdd).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,7 +102,8 @@ public class MainActivity extends AppCompatActivity
             }
         });
         final int COMPLETED = 0;
-        final Handler handler = new Handler(){
+
+        translateHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 if (msg.what == COMPLETED) {
@@ -106,16 +113,25 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         };
-        findViewById(R.id.etMeaning).setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        etMeaningOnFocusChangeListener = new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
-                if(b) {
+                if (b && isAutoTranslate) {
                     findViewById(R.id.tvStatus).setVisibility(View.VISIBLE);
-                    translateUtils.translate(((EditText) findViewById(R.id.etWord)).getText().toString(),handler);
+                    translateUtils.translate(((EditText) findViewById(R.id.etWord)).getText().toString(), translateHandler);
                 }
             }
-        });
+        };
+        findViewById(R.id.etMeaning).setOnFocusChangeListener(etMeaningOnFocusChangeListener);
 
+        modiDiaBuilder = new ModiDiaBuilder(this, isAutoTranslate);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                modiDiaBuilder.built(((TextView) ((LinearLayout) view).getChildAt(1)).getText().toString()
+                        , ((TextView) ((LinearLayout) view).getChildAt(2)).getText().toString());
+            }
+        });
     }
 
 
@@ -133,6 +149,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        menu.getItem(0).setChecked(isAutoTranslate);
         return true;
     }
 
@@ -144,10 +161,16 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.mAutoTranslate:
+                item.setChecked(isAutoTranslate = !item.isChecked());
+                modiDiaBuilder.setAutoTranslate(isAutoTranslate);
+                getSharedPreferences("data", MODE_PRIVATE).edit().putBoolean("isAutoTranslate", isAutoTranslate).apply();
+                break;
+            case R.id.action_settings:
+                //TODO 设置
+                break;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -192,22 +215,5 @@ public class MainActivity extends AppCompatActivity
         etWord.requestFocus();
     }
 
-    public void setImeEvent(EditText et){
-        et.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                switch (i) {
-                    case EditorInfo.IME_ACTION_DONE:
-                        addHistoryItem(getBaseContext());
-                        break;
-                    case EditorInfo.IME_ACTION_NEXT:
-                        //TODO 切换中文输入法
-                    default:
-                        break;
-                }
-                return true;
-            }
-        });
-    }
 }
 

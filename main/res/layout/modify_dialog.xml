@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TableLayout
+        android:id="@+id/tlModiDia"
+        android:layout_width="295dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/tvModiDiaWord"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="单词"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/etModiDiaWord"
+                android:layout_width="263dp"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:singleLine="true"
+                android:textSize="16sp" />
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/tvModiDiaMeaning"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="翻译"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/etModiDiaMeaning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:imeOptions="actionDone"
+                android:inputType="textPhonetic"
+                android:nextFocusForward="@id/etWord"
+                android:singleLine="true"
+                android:textSize="16sp" />
+
+        </TableRow>
+
+    </TableLayout>
+
+    <TextView
+        android:id="@+id/tvModiDiaStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="15dp"
+        android:layout_marginStart="8dp"
+        android:text="自动翻译中..."
+        android:textSize="10sp"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tlModiDia" />
+
+</android.support.constraint.ConstraintLayout>

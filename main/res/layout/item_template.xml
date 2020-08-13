@@ -4,10 +4,10 @@ xmlns:android="http://schemas.android.com/apk/res/android"
 android:layout_width="match_parent"
 android:layout_height="wrap_content"
 android:background="?android:attr/selectableItemBackground"
-android:clickable="true"
-android:focusable="true"
+    android:clickable="false"
+    android:focusable="false"
 android:orientation="vertical"
-    android:descendantFocusability="beforeDescendants">
+    android:descendantFocusability="blocksDescendants">
 
     <Space
         android:layout_width="match_parent"
