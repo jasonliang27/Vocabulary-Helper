@@ -127,9 +127,15 @@ public class MainActivity extends AppCompatActivity
         modiDiaBuilder = new ModiDiaBuilder(this, isAutoTranslate);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                modiDiaBuilder.built(((TextView) ((LinearLayout) view).getChildAt(1)).getText().toString()
-                        , ((TextView) ((LinearLayout) view).getChildAt(2)).getText().toString());
+            public void onItemClick(AdapterView<?> adapterView, final View view, int i, long l) {
+                modiDiaBuilder.built(((TextView) ((LinearLayout) view).getChildAt(1)).getText().toString(),
+                        ((TextView) ((LinearLayout) view).getChildAt(2)).getText().toString(), new ModiDiaBuilder.UpdateUIInterface() {
+                            @Override
+                            public void updateUI(String word, String meaning) {
+                                ((TextView) ((LinearLayout) view).getChildAt(1)).setText(word);
+                                ((TextView) ((LinearLayout) view).getChildAt(2)).setText(meaning);
+                            }
+                        });
             }
         });
     }
@@ -180,10 +186,10 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        /*if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
+        if (id == R.id.nav_quickadd) {
+            setTitle("快速添加");
+        } else if (id == R.id.nav_wordsbook) {
+            setTitle("单词本");
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {
@@ -192,7 +198,7 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_send) {
 
-        }*/
+        }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -201,7 +207,7 @@ public class MainActivity extends AppCompatActivity
 
     public void addHistoryItem(Context context){
 
-        if(etWord.getText().toString().equals("")||(etMeaning.getText().toString().equals("")&&etMeaning.getHint().toString().equals(""))) {
+        if (etWord.getText().toString().equals("") || etMeaning.getText().toString().equals("")) {
             Toast.makeText(context,"单词或翻译不能为空",Toast.LENGTH_LONG).show();
             return;
         }
