@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -25,6 +26,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 /**
@@ -171,7 +174,7 @@ public class QuickAddFrag extends Fragment {
         view.findViewById(R.id.etMeaning).setOnFocusChangeListener(etMeaningOnFocusChangeListener);
 
         modiDiaBuilder = new ModiDiaBuilder(mContext, isAutoTranslate);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        final AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, final View view, int i, long l) {
                 modiDiaBuilder.built(((TextView) ((LinearLayout) view).getChildAt(1)).getText().toString(),
@@ -182,6 +185,33 @@ public class QuickAddFrag extends Fragment {
                                 ((TextView) ((LinearLayout) view).getChildAt(2)).setText(meaning);
                             }
                         });
+            }
+        };
+        listView.setOnItemClickListener(onItemClickListener);
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int i, long l) {
+                final Map<String, Object> old = lists.get(i);
+                lists.remove(i);
+                adapter.notifyDataSetChanged();
+                //TODO 删除项
+                Snackbar.make(listView, "已删除单词 " + ((TextView) ((LinearLayout) view).getChildAt(1)).getText().toString(), Snackbar.LENGTH_LONG)
+                        .setAction("撤销", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                lists.add(i, old);
+                                adapter.notifyDataSetChanged();
+                                //TODO 恢复项
+                            }
+                        })
+                        .show();
+                listView.setOnItemClickListener(null);
+                new Timer().schedule(new TimerTask() {
+                    public void run() {
+                        listView.setOnItemClickListener(onItemClickListener);
+                    }
+                }, 750);
+                return false;
             }
         });
     }
@@ -197,6 +227,7 @@ public class QuickAddFrag extends Fragment {
         map.put("meanings", etMeaning.getText().toString().equals("") ? etMeaning.getHint().toString() : etMeaning.getText().toString());
         lists.add(0, map);
         adapter.notifyDataSetChanged();
+        //TODO 添加项
         etMeaning.setText("");
         etWord.setText("");
         etWord.requestFocus();
