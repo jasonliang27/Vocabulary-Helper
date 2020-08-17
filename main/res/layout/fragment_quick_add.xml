@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".QuickAddFrag">
+
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TableLayout
+            android:id="@+id/tableLayout2"
+            android:layout_width="295dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toStartOf="@+id/btnAdd"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="单词"
+                    android:textSize="16sp"
+                    tools:layout_editor_absoluteX="42dp"
+                    tools:layout_editor_absoluteY="28dp" />
+
+                <EditText
+                    android:id="@+id/etWord"
+                    android:layout_width="263dp"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:inputType="textPersonName"
+                    android:singleLine="true"
+                    android:textSize="16sp"
+                    tools:layout_editor_absoluteX="94dp"
+                    tools:layout_editor_absoluteY="16dp" />
+
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/textView3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="翻译"
+                    android:textSize="16sp"
+                    tools:layout_editor_absoluteX="42dp"
+                    tools:layout_editor_absoluteY="85dp" />
+
+                <EditText
+                    android:id="@+id/etMeaning"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:imeOptions="actionDone"
+                    android:inputType="textPhonetic"
+                    android:nextFocusForward="@id/etWord"
+                    android:singleLine="true"
+                    android:textSize="16sp" />
+
+            </TableRow>
+
+        </TableLayout>
+
+        <Button
+            android:id="@+id/btnAdd"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="52dp"
+            android:layout_height="46dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="添加"
+            app:layout_constraintBottom_toTopOf="@+id/tvStatus"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.851"
+            app:layout_constraintStart_toEndOf="@+id/tableLayout2"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ListView
+            android:id="@+id/listview"
+            android:layout_width="0dp"
+            android:layout_height="364dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView4" />
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="6dp"
+            android:text="本次录入记录"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toTopOf="@+id/listview"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvStatus"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="15dp"
+            android:layout_marginStart="8dp"
+            android:text="自动翻译中..."
+            android:textSize="10sp"
+            android:visibility="invisible"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tableLayout2" />
+    </android.support.constraint.ConstraintLayout>
+</FrameLayout>

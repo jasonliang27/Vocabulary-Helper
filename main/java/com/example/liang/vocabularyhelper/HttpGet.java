@@ -1,6 +1,6 @@
 package com.example.liang.vocabularyhelper;
 
-import android.util.Log;
+import android.annotation.SuppressLint;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
@@ -9,12 +9,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 
@@ -24,10 +22,27 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 class HttpGet {
-    protected static final int SOCKET_TIMEOUT = 10000; // 10S
-    protected static final String GET = "GET";
+    private static final int SOCKET_TIMEOUT = 10000; // 10S
+    private static final String GET = "GET";
+    private static TrustManager myX509TrustManager = new X509TrustManager() {
 
-    public static String get(String host, Map<String, String> params) {
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
+
+        @SuppressLint("TrustAllX509TrustManager")
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) {
+        }
+
+        @SuppressLint("TrustAllX509TrustManager")
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) {
+        }
+    };
+
+    static String get(String host, Map<String, String> params) {
         try {
             // 设置SSLContext
             SSLContext sslcontext = SSLContext.getInstance("TLS");
@@ -35,7 +50,7 @@ class HttpGet {
 
             String sendUrl = getUrlWithQueryString(host, params);
 
-            Log.d("TranslateDebug Url", sendUrl);
+            //Log.d("TranslateDebug Url", sendUrl);
             // System.out.println("URL:" + sendUrl);
 
             URL uri = new URL(sendUrl); // 创建URL对象
@@ -67,20 +82,14 @@ class HttpGet {
             conn.disconnect(); // 断开连接
 
             return text;
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (KeyManagementException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
+        } catch (IOException | KeyManagementException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
 
         return null;
     }
 
-    public static String getUrlWithQueryString(String url, Map<String, String> params) {
+    private static String getUrlWithQueryString(String url, Map<String, String> params) {
         if (params == null) {
             return url;
         }
@@ -113,7 +122,7 @@ class HttpGet {
         return builder.toString();
     }
 
-    protected static void close(Closeable closeable) {
+    private static void close(Closeable closeable) {
         if (closeable != null) {
             try {
                 closeable.close();
@@ -129,7 +138,7 @@ class HttpGet {
      * @param input 原文
      * @return URL编码. 如果编码失败, 则返回原文
      */
-    public static String encode(String input) {
+    private static String encode(String input) {
         if (input == null) {
             return "";
         }
@@ -142,21 +151,5 @@ class HttpGet {
 
         return input;
     }
-
-    private static TrustManager myX509TrustManager = new X509TrustManager() {
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return null;
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) {
-        }
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType) {
-        }
-    };
 
 }

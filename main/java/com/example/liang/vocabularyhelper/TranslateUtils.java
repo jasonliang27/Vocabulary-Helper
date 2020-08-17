@@ -3,7 +3,6 @@ package com.example.liang.vocabularyhelper;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 
 import org.json.JSONObject;
 
@@ -98,11 +97,11 @@ class TranslateUtils {
             String src = appid + query + salt + securityKey; // 加密前的原文
             try {
                 params.put("sign", Hash.md5(src).toLowerCase());
-                Log.d("TranslateDebug Sign", Hash.md5(src).toLowerCase());
+                //Log.d("TranslateDebug Sign", Hash.md5(src).toLowerCase());
             } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
             }
-            Log.d("TranslateDebug Param", params.toString());
+            //Log.d("TranslateDebug Param", params.toString());
             return params;
         }
 
