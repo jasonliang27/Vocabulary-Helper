@@ -30,6 +30,8 @@ public class WordsBookFrag extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
+    private View mView;
+
     public WordsBookFrag() {
         // Required empty public constructor
     }
@@ -65,7 +67,7 @@ public class WordsBookFrag extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_words_book, container, false);
+        return mView = inflater.inflate(R.layout.fragment_words_book, container, false);
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -105,5 +107,12 @@ public class WordsBookFrag extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mView.findViewById(R.id.lisWords);
+        //TODO 初始化listview
     }
 }
