@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity
         fragmentTransaction.show(currentFragment = quickAddFrag);
         fragmentTransaction.commit();
 
+        initDatabase();
     }
 
     @Override
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
+        // Handle action bar itemHandler clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
@@ -118,7 +119,7 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        // Handle navigation view item clicks here.
+        // Handle navigation view itemHandler clicks here.
         int id = item.getItemId();
 
         if (id != currentPage) {
@@ -134,7 +135,6 @@ public class MainActivity extends AppCompatActivity
                     fragmentTransaction.add(R.id.fragment_main, wordsBookFrag);
                 }
                 fragmentTransaction.show(currentFragment = wordsBookFrag);
-                //fragmentTransaction.replace(R.id.fragment_main,wordsBookFrag);
             } else if (id == R.id.nav_slideshow) {
 
             } else if (id == R.id.nav_manage) {
@@ -162,6 +162,12 @@ public class MainActivity extends AppCompatActivity
         quickAddFrag.setAutoTranslate(b);
         isAutoTranslate = b;
         return b;
+    }
+
+    void initDatabase() {
+        WordlistDB db = new WordlistDB(this);
+        //Log.d("dbdbdb",String.valueOf(db.removeAll()));
+        quickAddFrag.setDataBase(db);
     }
 }
 

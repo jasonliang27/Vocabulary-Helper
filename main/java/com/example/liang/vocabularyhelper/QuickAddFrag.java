@@ -43,6 +43,7 @@ public class QuickAddFrag extends Fragment {
     private List<Map<String, Object>> lists;
     private SimpleAdapter adapter;
     private ListView listView;
+    private WordlistDB db;
 
     public QuickAddFrag() {
         // Required empty public constructor
@@ -179,20 +180,33 @@ public class QuickAddFrag extends Fragment {
     }
 
     public void addHistoryItem(Context context) {
-
         if (etWord.getText().toString().equals("") || etMeaning.getText().toString().equals("")) {
             Toast.makeText(context, "单词或翻译不能为空", Toast.LENGTH_LONG).show();
             return;
         }
+        String word = etWord.getText().toString();
+        String meaning = etMeaning.getText().toString().equals("") ? etMeaning.getHint().toString() : etMeaning.getText().toString();
         Map<String, Object> map = new HashMap<>();
-        map.put("words", etWord.getText().toString());
-        map.put("meanings", etMeaning.getText().toString().equals("") ? etMeaning.getHint().toString() : etMeaning.getText().toString());
+        map.put("words", word);
+        map.put("meanings", meaning);
         lists.add(0, map);
         adapter.notifyDataSetChanged();
-        //TODO 添加项
+        db.addItem(word, meaning);
         etMeaning.setText("");
         etWord.setText("");
         etWord.requestFocus();
+        db.getAllItems(new WordlistDB.ItemHandlerInterface() {
+            @Override
+            public void itemHandler(Map<String, String> dataRow) {
+                db.logDataRow(dataRow);
+            }
+        });
+        db.getItemById(1, new WordlistDB.ItemHandlerInterface() {
+            @Override
+            public void itemHandler(Map<String, String> dataRow) {
+                db.logDataRow(dataRow);
+            }
+        });
     }
 
     public void setAutoTranslate(boolean b) {
@@ -204,5 +218,9 @@ public class QuickAddFrag extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    public void setDataBase(WordlistDB dataBase) {
+        db = dataBase;
     }
 }
