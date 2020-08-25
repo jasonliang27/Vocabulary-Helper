@@ -44,6 +44,7 @@ public class QuickAddFrag extends Fragment {
     private SimpleAdapter adapter;
     private ListView listView;
     private WordlistDB db;
+    private WordsBookFrag wordsBookFrag;
 
     public QuickAddFrag() {
         // Required empty public constructor
@@ -189,24 +190,16 @@ public class QuickAddFrag extends Fragment {
         Map<String, Object> map = new HashMap<>();
         map.put("words", word);
         map.put("meanings", meaning);
+        //map.put("id")//TODO put id
+        int id = db.addItem(word, meaning);
         lists.add(0, map);
         adapter.notifyDataSetChanged();
-        db.addItem(word, meaning);
         etMeaning.setText("");
         etWord.setText("");
         etWord.requestFocus();
-        db.getAllItems(new WordlistDB.ItemHandlerInterface() {
-            @Override
-            public void itemHandler(Map<String, String> dataRow) {
-                db.logDataRow(dataRow);
-            }
-        });
-        db.getItemById(1, new WordlistDB.ItemHandlerInterface() {
-            @Override
-            public void itemHandler(Map<String, String> dataRow) {
-                db.logDataRow(dataRow);
-            }
-        });
+        if (wordsBookFrag != null) {
+            wordsBookFrag.addItem(id);
+        }
     }
 
     public void setAutoTranslate(boolean b) {
@@ -222,5 +215,9 @@ public class QuickAddFrag extends Fragment {
 
     public void setDataBase(WordlistDB dataBase) {
         db = dataBase;
+    }
+
+    public void setWordsBookFrag(WordsBookFrag wordsBookFrag) {
+        this.wordsBookFrag = wordsBookFrag;
     }
 }

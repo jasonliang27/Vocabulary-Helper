@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/tvWBItemWord"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="6dp"
+        android:text="TextView"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvWBItemMeaning"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="6dp"
+        android:text="TextView"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvWBItemWord" />
+
+    <CheckBox
+        android:id="@+id/cbWBItemCheck"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:layout_width="65dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/cbWBItemCheck">
+
+        <TextView
+            android:id="@+id/tvWBItemRate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="100.0%"
+            android:textSize="12sp"
+            tools:layout_editor_absoluteX="278dp"
+            tools:layout_editor_absoluteY="15dp" />
+
+        <TextView
+            android:id="@+id/tvWBItemDaysAgo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="100天前"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tvWBItemAddDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2019/12/23"
+            android:textSize="12sp"
+            tools:layout_editor_absoluteX="239dp"
+            tools:layout_editor_absoluteY="32dp" />
+
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>

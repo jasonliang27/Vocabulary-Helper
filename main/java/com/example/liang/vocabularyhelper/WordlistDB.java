@@ -36,7 +36,7 @@ class WordlistDB {
         return mdb;
     }
 
-    void addItem(String word, String meaning) {
+    int addItem(String word, String meaning) {
         ContentValues values = new ContentValues();
         values.put("words", word);
         values.put("meanings", meaning);
@@ -50,6 +50,11 @@ class WordlistDB {
         values.put("add_date", timestamp);
         SQLiteDatabase db = (new DatabaseHelper(mContext, DATABASE, null, 1)).getReadableDatabase();
         db.insert(TABLE, null, values);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE, null);
+        cursor.moveToLast();
+        int id = cursor.getInt(cursor.getColumnIndex("id"));
+        cursor.close();
+        return id;
     }
 
     int removeAll() {
@@ -75,6 +80,7 @@ class WordlistDB {
                 itemHandlerInterface.itemHandler(map);
             } while (cursor.moveToNext());
         }
+        cursor.close();
     }
 
     void getItem(String sql, ItemHandlerInterface itemHandlerInterface) {
@@ -86,14 +92,22 @@ class WordlistDB {
             Log.d("dbdbdb", i + ":" + (dataRow.get(i) == null ? "null" : dataRow.get(i)));
     }
 
+    int getRowsCount() {
+        return (int) mdb.compileStatement("SELECT COUNT(*) FROM " + TABLE).simpleQueryForLong();
+    }
+
+    /*int getLastId(){
+        //TODO getLastId
+    }*/
+
     interface ItemHandlerInterface {
         void itemHandler(Map<String, String> dataRow);
     }
 
-    class ColNames {
-        String id = "id",
-                word = "word",
-                meaning = "meaning",
+    static class ColNames {
+        static String id = "id",
+                word = "words",
+                meaning = "meanings",
                 test_times = "test_times ",
                 correct_times = "correct_times",
                 correct_rate = "correct_rate",

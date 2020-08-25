@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity
     WordsBookFrag wordsBookFrag;
     int currentPage;
     android.support.v4.app.Fragment currentFragment;
+    WordlistDB db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +75,9 @@ public class MainActivity extends AppCompatActivity
         fragmentTransaction.show(currentFragment = quickAddFrag);
         fragmentTransaction.commit();
 
-        initDatabase();
+        db = new WordlistDB(this);
+        //Log.d("dbdbdb",String.valueOf(db.removeAll()));
+        quickAddFrag.setDataBase(db);
     }
 
     @Override
@@ -108,7 +111,7 @@ public class MainActivity extends AppCompatActivity
             case R.id.mAutoTranslate:
                 item.setChecked(setAutoTranslate(!item.isChecked()));
                 getSharedPreferences("data", MODE_PRIVATE).edit().putBoolean("isAutoTranslate", isAutoTranslate).apply();
-                break;//TODO isAutoTranslate
+                break;
             case R.id.action_settings:
                 //TODO 设置
                 break;
@@ -132,7 +135,15 @@ public class MainActivity extends AppCompatActivity
                 setTitle("单词本");
                 if (wordsBookFrag == null) {
                     wordsBookFrag = new WordsBookFrag();
+                    wordsBookFrag.setDataBase(db);
+                    quickAddFrag.setWordsBookFrag(wordsBookFrag);
                     fragmentTransaction.add(R.id.fragment_main, wordsBookFrag);
+
+                    /*android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+                    if (actionBar != null) {
+                        actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM); //Enable自定义的View
+                        actionBar.setCustomView(R.layout.modify_actionbar_layout);//设置自定义的布局：actionbar_custom
+                    }*///TODO ActionBar
                 }
                 fragmentTransaction.show(currentFragment = wordsBookFrag);
             } else if (id == R.id.nav_slideshow) {
@@ -162,12 +173,6 @@ public class MainActivity extends AppCompatActivity
         quickAddFrag.setAutoTranslate(b);
         isAutoTranslate = b;
         return b;
-    }
-
-    void initDatabase() {
-        WordlistDB db = new WordlistDB(this);
-        //Log.d("dbdbdb",String.valueOf(db.removeAll()));
-        quickAddFrag.setDataBase(db);
     }
 }
 
