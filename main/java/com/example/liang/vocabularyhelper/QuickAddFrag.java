@@ -64,7 +64,7 @@ public class QuickAddFrag extends Fragment {
         etWord = view.findViewById(R.id.etWord);
         etMeaning = view.findViewById(R.id.etMeaning);
         lists = new ArrayList<>();
-        adapter = new SimpleAdapter(mContext, lists, R.layout.item_template, new String[]{"words", "meanings"}, new int[]{R.id.lis_word, R.id.lis_meaning});
+        adapter = new SimpleAdapter(mContext, lists, R.layout.qa_item_template, new String[]{"words", "meanings"}, new int[]{R.id.lis_word, R.id.lis_meaning});
         listView = view.findViewById(R.id.listview);
         listView.setAdapter(adapter);
 
@@ -158,14 +158,19 @@ public class QuickAddFrag extends Fragment {
                 }
                 lists.remove(i);
                 adapter.notifyDataSetChanged();
-                //TODO 删除项
+                db.removeItem((int) old.get("id"));
+                if (wordsBookFrag != null)
+                    wordsBookFrag.removeItem(i);
                 Snackbar.make(listView, "已删除单词 " + ((TextView) ((LinearLayout) view).getChildAt(1)).getText().toString(), Snackbar.LENGTH_LONG)
                         .setAction("撤销", new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
+                                int id = db.addItem((String) old.get("words"), (String) old.get("meanings"));
+                                old.put("id", id);
                                 lists.add(i, old);
                                 adapter.notifyDataSetChanged();
-                                //TODO 恢复项
+                                if (wordsBookFrag != null)
+                                    wordsBookFrag.undoRemove(id);
                             }
                         })
                         .show();
@@ -190,16 +195,15 @@ public class QuickAddFrag extends Fragment {
         Map<String, Object> map = new HashMap<>();
         map.put("words", word);
         map.put("meanings", meaning);
-        //map.put("id")//TODO put id
         int id = db.addItem(word, meaning);
+        map.put("id", id);
         lists.add(0, map);
         adapter.notifyDataSetChanged();
         etMeaning.setText("");
         etWord.setText("");
         etWord.requestFocus();
-        if (wordsBookFrag != null) {
+        if (wordsBookFrag != null)
             wordsBookFrag.addItem(id);
-        }
     }
 
     public void setAutoTranslate(boolean b) {

@@ -4,8 +4,13 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Environment;
 import android.util.Log;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,15 +24,15 @@ class WordlistDB {
         mContext = context;
         mdb = (new DatabaseHelper(mContext, DATABASE, null, 1)).getWritableDatabase();
         mdb.execSQL("create table if not exists wordlist(\n" +
-                "    id INTEGER primary key autoincrement,\n" +
-                "     words VARCHAR not null,\n" +
-                "     meanings VARCHAR,\n" +
-                "     test_times INTEGER,\n" +
-                "     correct_times INTEGER,\n" +
-                "     correct_rate FLOAT,\n" +
-                "     test_date LONG,\n" +
-                "     learn_date LONG,\n" +
-                "     add_date LONG\n" +
+                "    " + ColNames.id + " INTEGER primary key autoincrement,\n" +
+                "     " + ColNames.word + " VARCHAR not null,\n" +
+                "     " + ColNames.meaning + " VARCHAR,\n" +
+                "     " + ColNames.test_times + " INTEGER,\n" +
+                "     " + ColNames.correct_times + " INTEGER,\n" +
+                "     " + ColNames.correct_rate + " FLOAT,\n" +
+                "     " + ColNames.test_date + " LONG,\n" +
+                "     " + ColNames.learn_date + " LONG,\n" +
+                "     " + ColNames.add_date + " LONG\n" +
                 "     )");
         timestamp = System.currentTimeMillis();
     }
@@ -38,27 +43,28 @@ class WordlistDB {
 
     int addItem(String word, String meaning) {
         ContentValues values = new ContentValues();
-        values.put("words", word);
-        values.put("meanings", meaning);
-        values.put("test_times", 0);
-        values.put("correct_times", 0);
-        values.putNull("correct_rate");
-        values.putNull("test_date");
-        values.putNull("learn_date");
-        values.putNull("test_date");
-        values.putNull("learn_date");
-        values.put("add_date", timestamp);
+        values.put(ColNames.word, word);
+        values.put(ColNames.meaning, meaning);
+        values.put(ColNames.test_times, 0);
+        values.put(ColNames.test_date, 0);
+        values.putNull(ColNames.correct_times);
+        values.putNull(ColNames.correct_rate);
+        values.putNull(ColNames.test_date);
+        values.putNull(ColNames.learn_date);
+        values.putNull(ColNames.test_date);
+        values.putNull(ColNames.learn_date);
+        values.put(ColNames.add_date, timestamp);
         SQLiteDatabase db = (new DatabaseHelper(mContext, DATABASE, null, 1)).getReadableDatabase();
         db.insert(TABLE, null, values);
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE, null);
-        cursor.moveToLast();
-        int id = cursor.getInt(cursor.getColumnIndex("id"));
-        cursor.close();
-        return id;
+        return getLastId();
     }
 
     int removeAll() {
         return mdb.delete(TABLE, null, null);
+    }
+
+    void removeItem(int id) {
+        mdb.delete(TABLE, "id=?", new String[]{String.valueOf(id)});
     }
 
     void getAllItems(ItemHandlerInterface itemHandlerInterface) {
@@ -96,9 +102,33 @@ class WordlistDB {
         return (int) mdb.compileStatement("SELECT COUNT(*) FROM " + TABLE).simpleQueryForLong();
     }
 
-    /*int getLastId(){
-        //TODO getLastId
-    }*/
+    int getLastId() {
+        Cursor cursor = mdb.rawQuery("select * from " + TABLE + " where " + ColNames.id + " = (select max(" + ColNames.id + ") from " + TABLE + ")", null);
+        cursor.moveToFirst();
+        int id = cursor.getInt(cursor.getColumnIndex(ColNames.id));
+        cursor.close();
+        return id;
+    }
+
+    void exportDB(/*String dir*/) {
+        copyFile(mdb.getPath(), Environment.getExternalStorageDirectory() + File.separator + "VocabularyHelper" + File.separator + "db");
+    }
+
+    private void copyFile(String fromfile, String tofile) {
+        try {
+            FileInputStream fis = new java.io.FileInputStream(fromfile);
+            FileOutputStream fos = new FileOutputStream(tofile);
+            byte bt[] = new byte[1024];
+            int c;
+            while ((c = fis.read(bt)) > 0) {
+                fos.write(bt, 0, c);
+            }
+            fis.close();
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     interface ItemHandlerInterface {
         void itemHandler(Map<String, String> dataRow);

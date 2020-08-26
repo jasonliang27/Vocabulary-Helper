@@ -127,9 +127,13 @@ public class MainActivity extends AppCompatActivity
 
         if (id != currentPage) {
             android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.hide(currentFragment);
+            if (currentPage == R.id.nav_quickadd)
+                fragmentTransaction.remove(currentFragment);
+            else
+                fragmentTransaction.hide(currentFragment);
             if (id == R.id.nav_quickadd) {
                 setTitle("快速添加");
+                fragmentTransaction.add(R.id.fragment_main, quickAddFrag);
                 fragmentTransaction.show(currentFragment = quickAddFrag);
             } else if (id == R.id.nav_wordsbook) {
                 setTitle("单词本");

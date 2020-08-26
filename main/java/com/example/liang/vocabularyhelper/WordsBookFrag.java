@@ -48,6 +48,7 @@ public class WordsBookFrag extends Fragment {
     List<Map<String, Object>> lists = new ArrayList<>();
     SimpleAdapter adapter;
     private Context mContext;
+    Map<String, Object> lastRemovedItem;
 
     public WordsBookFrag() {
         // Required empty public constructor
@@ -130,8 +131,8 @@ public class WordsBookFrag extends Fragment {
     @Override
     public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        adapter = new SimpleAdapter(mContext, lists, R.layout.wb_item_template, new String[]{"words", "meanings", "rate", "days_ago", "add_date"},
-                new int[]{R.id.tvWBItemWord, R.id.tvWBItemMeaning, R.id.tvWBItemRate, R.id.tvWBItemDaysAgo, R.id.tvWBItemAddDate});
+        adapter = new SimpleAdapter(mContext, lists, R.layout.wb_item_template, new String[]{"words", "meanings", "rate", "days_ago", "add_date", "id"},
+                new int[]{R.id.tvWBItemWord, R.id.tvWBItemMeaning, R.id.tvWBItemRate, R.id.tvWBItemDaysAgo, R.id.tvWBItemAddDate, R.id.tvWBItemId});
         ((ListView) view.findViewById(R.id.lisWords)).setAdapter(adapter);
         class LoadWordsTask extends AsyncTask<String, Integer, String> {
             private int len;
@@ -154,6 +155,7 @@ public class WordsBookFrag extends Fragment {
                         map.put("rate", isNull(dataRow.get(WordlistDB.ColNames.correct_rate)) ? "" : String.valueOf(Math.round(Float.valueOf(dataRow.get(WordlistDB.ColNames.correct_rate)) * 1000) / 1000.0) + "%");
                         map.put("days_ago", isNull(dataRow.get(WordlistDB.ColNames.test_date)) ? "从未测试" : timestampToDate(Long.valueOf(dataRow.get(WordlistDB.ColNames.test_date)), timestamp, false));
                         map.put("add_date", timestampToDate(Long.valueOf(dataRow.get(WordlistDB.ColNames.add_date)), timestamp, true));
+                        map.put("id", String.valueOf(Integer.valueOf(dataRow.get(WordlistDB.ColNames.id))));
                         lists.add(map);
                         publishProgress(++i[0]);
                     }
@@ -216,11 +218,21 @@ public class WordsBookFrag extends Fragment {
                 map.put("rate", "");
                 map.put("days_ago", "从未测试");
                 map.put("add_date", timestampToDate(Long.valueOf(dataRow.get(WordlistDB.ColNames.add_date)), timestamp, true));
+                map.put("id", String.valueOf(Integer.valueOf(dataRow.get(WordlistDB.ColNames.id))));
                 lists.add(map);
+                adapter.notifyDataSetChanged();
             }
         });
-        adapter.notifyDataSetChanged();
     }
 
+    public void removeItem(int indexFromLast) {
+        lastRemovedItem = lists.get(lists.size() - indexFromLast - 1);
+        lists.remove(lists.size() - indexFromLast - 1);
+    }
+
+    public void undoRemove(int id) {
+        lastRemovedItem.put("id", id);
+        lists.add(lastRemovedItem);
+    }
 
 }
