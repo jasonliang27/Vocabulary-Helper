@@ -7,10 +7,13 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -45,10 +48,12 @@ public class WordsBookFrag extends Fragment {
 
     private View mView;
     WordlistDB db;
-    List<Map<String, Object>> lists = new ArrayList<>();
+    List<Map<String, Object>> lists;
     SimpleAdapter adapter;
     private Context mContext;
     Map<String, Object> lastRemovedItem;
+    Boolean isAutoTranslate;
+    int wordsCount;
 
     public WordsBookFrag() {
         // Required empty public constructor
@@ -131,62 +136,21 @@ public class WordsBookFrag extends Fragment {
     @Override
     public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        adapter = new SimpleAdapter(mContext, lists, R.layout.wb_item_template, new String[]{"words", "meanings", "rate", "days_ago", "add_date", "id"},
-                new int[]{R.id.tvWBItemWord, R.id.tvWBItemMeaning, R.id.tvWBItemRate, R.id.tvWBItemDaysAgo, R.id.tvWBItemAddDate, R.id.tvWBItemId});
-        ((ListView) view.findViewById(R.id.lisWords)).setAdapter(adapter);
-        class LoadWordsTask extends AsyncTask<String, Integer, String> {
-            private int len;
-
+        loadList(null);
+        ((ListView) view.findViewById(R.id.lisWords)).setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            protected String doInBackground(String... params) {
-                final Integer[] i = {0};
-                try {
-                    Thread.currentThread().sleep(150);//等待抽屉收回
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                db.getAllItems(new WordlistDB.ItemHandlerInterface() {
-                    @Override
-                    public void itemHandler(Map<String, String> dataRow) {
-                        long timestamp = System.currentTimeMillis();
-                        Map<String, Object> map = new HashMap<>();
-                        map.put("words", dataRow.get(WordlistDB.ColNames.word));
-                        map.put("meanings", dataRow.get(WordlistDB.ColNames.meaning));
-                        map.put("rate", isNull(dataRow.get(WordlistDB.ColNames.correct_rate)) ? "" : String.valueOf(Math.round(Float.valueOf(dataRow.get(WordlistDB.ColNames.correct_rate)) * 1000) / 1000.0) + "%");
-                        map.put("days_ago", isNull(dataRow.get(WordlistDB.ColNames.test_date)) ? "从未测试" : timestampToDate(Long.valueOf(dataRow.get(WordlistDB.ColNames.test_date)), timestamp, false));
-                        map.put("add_date", timestampToDate(Long.valueOf(dataRow.get(WordlistDB.ColNames.add_date)), timestamp, true));
-                        map.put("id", String.valueOf(Integer.valueOf(dataRow.get(WordlistDB.ColNames.id))));
-                        lists.add(map);
-                        publishProgress(++i[0]);
-                    }
-                });
-                return null;
+            public void onItemClick(AdapterView<?> adapterView, final View view, final int i, long l) {
+                new ModiDiaBuilder(mContext, isAutoTranslate).built(((TextView) ((ConstraintLayout) view).getChildAt(0)).getText().toString(),
+                        ((TextView) ((ConstraintLayout) view).getChildAt(1)).getText().toString(), new ModiDiaBuilder.UpdateUIInterface() {
+                            @Override
+                            public void updateUI(String word, String meaning) {
+                                db.modifyData(Integer.valueOf(((TextView) ((ConstraintLayout) view).getChildAt(2)).getText().toString()), word, meaning);
+                                ((TextView) ((ConstraintLayout) view).getChildAt(0)).setText(word);
+                                ((TextView) ((ConstraintLayout) view).getChildAt(1)).setText(meaning);
+                            }
+                        });
             }
-
-            @Override
-            protected void onPreExecute() {
-                view.findViewById(R.id.pbWBLoading).setVisibility(View.VISIBLE);
-                ((TextView) view.findViewById(R.id.tvWBStatus)).setText("正在加载...");
-                view.findViewById(R.id.tvWBStatus).setVisibility(View.VISIBLE);
-                len = db.getRowsCount();
-            }
-
-            @SuppressLint("DefaultLocale")
-            @Override
-            protected void onProgressUpdate(Integer... progresses) {
-                ((TextView) view.findViewById(R.id.tvWBStatus)).setText(String.format("%d/%d (%.1f%%)", progresses[0], len, progresses[0] / (float) len * 100));
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                view.findViewById(R.id.pbWBLoading).setVisibility(View.INVISIBLE);
-                view.findViewById(R.id.tvWBStatus).setVisibility(View.INVISIBLE);
-                adapter.notifyDataSetChanged();
-                ((TextView) view.findViewById(R.id.tvWordsConut)).setText("共" + String.valueOf(adapter.getCount()) + "个单词");
-                view.findViewById(R.id.lisWords).setVisibility(View.VISIBLE);
-            }
-        }
-        new LoadWordsTask().execute();
+        });
     }
 
     boolean isNull(Object o) {
@@ -195,6 +159,10 @@ public class WordsBookFrag extends Fragment {
 
     public void setDataBase(WordlistDB db) {
         this.db = db;
+    }
+
+    public void setAutoTranslate(Boolean autoTranslate) {
+        isAutoTranslate = autoTranslate;
     }
 
     String timestampToDate(long t, long current, boolean isShowDate) {
@@ -218,21 +186,90 @@ public class WordsBookFrag extends Fragment {
                 map.put("rate", "");
                 map.put("days_ago", "从未测试");
                 map.put("add_date", timestampToDate(Long.valueOf(dataRow.get(WordlistDB.ColNames.add_date)), timestamp, true));
-                map.put("id", String.valueOf(Integer.valueOf(dataRow.get(WordlistDB.ColNames.id))));
+                map.put("id", String.valueOf(Integer.valueOf(dataRow.get(WordlistDB.ColNames.id))));//非测试代码，不可删除
                 lists.add(map);
                 adapter.notifyDataSetChanged();
             }
         });
+        ((TextView) mView.findViewById(R.id.tvWordsConut)).setText("共" + String.valueOf(++wordsCount) + "个单词");
+    }
+
+    public void loadList(final MenuItem item) {
+        final View view = getView();
+        lists = new ArrayList<>();
+        adapter = new SimpleAdapter(mContext, lists, R.layout.wb_item_template, new String[]{"words", "meanings", "rate", "days_ago", "add_date", "id"},
+                new int[]{R.id.tvWBItemWord, R.id.tvWBItemMeaning, R.id.tvWBItemRate, R.id.tvWBItemDaysAgo, R.id.tvWBItemAddDate, R.id.tvWBItemId});
+        ((ListView) view.findViewById(R.id.lisWords)).setAdapter(adapter);
+        class LoadWordsTask extends AsyncTask<String, Integer, String> {
+            private int len;
+            private List<Map<String, Object>> tmpList = new ArrayList<>();
+
+            @Override
+            protected String doInBackground(String... params) {
+                final Integer[] i = {0};
+                try {
+                    Thread.currentThread().sleep(150);//等待抽屉收回
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                db.getAllItems(new WordlistDB.ItemHandlerInterface() {
+                    @Override
+                    public void itemHandler(Map<String, String> dataRow) {
+                        long timestamp = System.currentTimeMillis();
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("words", dataRow.get(WordlistDB.ColNames.word));
+                        map.put("meanings", dataRow.get(WordlistDB.ColNames.meaning));
+                        map.put("rate", isNull(dataRow.get(WordlistDB.ColNames.correct_rate)) ? "" : String.valueOf(Math.round(Float.valueOf(dataRow.get(WordlistDB.ColNames.correct_rate)) * 1000) / 1000.0) + "%");
+                        map.put("days_ago", isNull(dataRow.get(WordlistDB.ColNames.test_date)) ? "从未测试" : timestampToDate(Long.valueOf(dataRow.get(WordlistDB.ColNames.test_date)), timestamp, false));
+                        map.put("add_date", timestampToDate(Long.valueOf(dataRow.get(WordlistDB.ColNames.add_date)), timestamp, true));
+                        map.put("id", String.valueOf(Integer.valueOf(dataRow.get(WordlistDB.ColNames.id))));//DEBUG
+                        tmpList.add(map);
+                        publishProgress(++i[0]);
+                    }
+                });
+                return null;
+            }
+
+            @Override
+            protected void onPreExecute() {
+                view.findViewById(R.id.lisWords).setVisibility(View.INVISIBLE);
+                view.findViewById(R.id.pbWBLoading).setVisibility(View.VISIBLE);
+                ((TextView) view.findViewById(R.id.tvWBStatus)).setText("正在加载...");
+                view.findViewById(R.id.tvWBStatus).setVisibility(View.VISIBLE);
+                len = db.getRowsCount();
+            }
+
+            @SuppressLint("DefaultLocale")
+            @Override
+            protected void onProgressUpdate(Integer... progresses) {
+                ((TextView) view.findViewById(R.id.tvWBStatus)).setText(String.format("%d/%d (%.1f%%)", progresses[0], len, progresses[0] / (float) len * 100));
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                view.findViewById(R.id.pbWBLoading).setVisibility(View.INVISIBLE);
+                view.findViewById(R.id.tvWBStatus).setVisibility(View.INVISIBLE);
+                lists.addAll(tmpList);
+                adapter.notifyDataSetChanged();
+                ((TextView) view.findViewById(R.id.tvWordsConut)).setText("共" + String.valueOf(wordsCount = adapter.getCount()) + "个单词");
+                view.findViewById(R.id.lisWords).setVisibility(View.VISIBLE);
+                if (item != null)
+                    item.setEnabled(true);
+            }
+        }
+        new LoadWordsTask().execute();
     }
 
     public void removeItem(int indexFromLast) {
         lastRemovedItem = lists.get(lists.size() - indexFromLast - 1);
         lists.remove(lists.size() - indexFromLast - 1);
+        ((TextView) mView.findViewById(R.id.tvWordsConut)).setText("共" + String.valueOf(--wordsCount) + "个单词");
     }
 
     public void undoRemove(int id) {
         lastRemovedItem.put("id", id);
         lists.add(lastRemovedItem);
+        ((TextView) mView.findViewById(R.id.tvWordsConut)).setText("共" + String.valueOf(++wordsCount) + "个单词");
     }
 
 }

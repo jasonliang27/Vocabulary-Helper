@@ -64,7 +64,7 @@ class WordlistDB {
     }
 
     void removeItem(int id) {
-        mdb.delete(TABLE, "id=?", new String[]{String.valueOf(id)});
+        mdb.delete(TABLE, ColNames.id + "=?", new String[]{String.valueOf(id)});
     }
 
     void getAllItems(ItemHandlerInterface itemHandlerInterface) {
@@ -72,7 +72,7 @@ class WordlistDB {
     }
 
     void getItemById(int id, ItemHandlerInterface itemHandlerInterface) {
-        getItem("SELECT * FROM " + TABLE + " WHERE id=" + String.valueOf(id), itemHandlerInterface);
+        getItem("SELECT * FROM " + TABLE + " WHERE " + ColNames.id + "=" + String.valueOf(id), itemHandlerInterface);
     }
 
     void getItem(String sql, String[] selectionArgs, ItemHandlerInterface itemHandlerInterface) {
@@ -108,6 +108,13 @@ class WordlistDB {
         int id = cursor.getInt(cursor.getColumnIndex(ColNames.id));
         cursor.close();
         return id;
+    }
+
+    public void modifyData(int id, String word, String meaning) {
+        ContentValues values = new ContentValues();
+        values.put(ColNames.word, word);
+        values.put(ColNames.meaning, meaning);
+        mdb.update(TABLE, values, ColNames.id + "=?", new String[]{String.valueOf(id)});
     }
 
     void exportDB(/*String dir*/) {

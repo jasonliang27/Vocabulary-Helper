@@ -134,11 +134,12 @@ public class QuickAddFrag extends Fragment {
         modiDiaBuilder = new ModiDiaBuilder(mContext, isAutoTranslate);
         final AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, final View view, int i, long l) {
+            public void onItemClick(AdapterView<?> adapterView, final View view, final int i, long l) {
                 modiDiaBuilder.built(((TextView) ((LinearLayout) view).getChildAt(1)).getText().toString(),
                         ((TextView) ((LinearLayout) view).getChildAt(2)).getText().toString(), new ModiDiaBuilder.UpdateUIInterface() {
                             @Override
                             public void updateUI(String word, String meaning) {
+                                db.modifyData((int) lists.get(i).get("id"), word, meaning);
                                 ((TextView) ((LinearLayout) view).getChildAt(1)).setText(word);
                                 ((TextView) ((LinearLayout) view).getChildAt(2)).setText(meaning);
                             }

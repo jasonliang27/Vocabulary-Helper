@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity
     int currentPage;
     android.support.v4.app.Fragment currentFragment;
     WordlistDB db;
+    Menu optionMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,7 +96,7 @@ public class MainActivity extends AppCompatActivity
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         menu.getItem(0).setChecked(isAutoTranslate);
-
+        optionMenu = menu;
         return true;
     }
 
@@ -112,6 +113,10 @@ public class MainActivity extends AppCompatActivity
                 item.setChecked(setAutoTranslate(!item.isChecked()));
                 getSharedPreferences("data", MODE_PRIVATE).edit().putBoolean("isAutoTranslate", isAutoTranslate).apply();
                 break;
+            case R.id.mRefresh:
+                item.setEnabled(false);
+                wordsBookFrag.loadList(item);
+                break;
             case R.id.action_settings:
                 //TODO 设置
                 break;
@@ -126,6 +131,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id != currentPage) {
+            optionMenu.getItem(1).setVisible(false);
             android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             if (currentPage == R.id.nav_quickadd)
                 fragmentTransaction.remove(currentFragment);
@@ -140,6 +146,7 @@ public class MainActivity extends AppCompatActivity
                 if (wordsBookFrag == null) {
                     wordsBookFrag = new WordsBookFrag();
                     wordsBookFrag.setDataBase(db);
+                    wordsBookFrag.setAutoTranslate(isAutoTranslate);
                     quickAddFrag.setWordsBookFrag(wordsBookFrag);
                     fragmentTransaction.add(R.id.fragment_main, wordsBookFrag);
 
@@ -150,6 +157,7 @@ public class MainActivity extends AppCompatActivity
                     }*///TODO ActionBar
                 }
                 fragmentTransaction.show(currentFragment = wordsBookFrag);
+                optionMenu.getItem(1).setVisible(true);
             } else if (id == R.id.nav_slideshow) {
 
             } else if (id == R.id.nav_manage) {
@@ -175,6 +183,8 @@ public class MainActivity extends AppCompatActivity
 
     public boolean setAutoTranslate(boolean b) {
         quickAddFrag.setAutoTranslate(b);
+        if (wordsBookFrag != null)
+            wordsBookFrag.setAutoTranslate(b);
         isAutoTranslate = b;
         return b;
     }
