@@ -8,7 +8,7 @@
     <item
         android:id="@+id/mRefresh"
         android:icon="@drawable/ic_refresh_outline"
-        android:title="Item"
+        android:title="刷新列表"
         android:visible="false"
         app:showAsAction="always" />
     <item

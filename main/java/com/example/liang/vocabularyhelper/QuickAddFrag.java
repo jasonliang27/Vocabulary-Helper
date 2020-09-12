@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import static android.content.Context.INPUT_METHOD_SERVICE;
 
@@ -140,6 +138,8 @@ public class QuickAddFrag extends Fragment {
                             @Override
                             public void updateUI(String word, String meaning) {
                                 db.modifyData((int) lists.get(i).get("id"), word, meaning);
+                                if (wordsBookFrag != null)
+                                    wordsBookFrag.modifyItem(i, word, meaning);
                                 ((TextView) ((LinearLayout) view).getChildAt(1)).setText(word);
                                 ((TextView) ((LinearLayout) view).getChildAt(2)).setText(meaning);
                             }
@@ -175,13 +175,7 @@ public class QuickAddFrag extends Fragment {
                             }
                         })
                         .show();
-                listView.setOnItemClickListener(null);
-                new Timer().schedule(new TimerTask() {
-                    public void run() {
-                        listView.setOnItemClickListener(onItemClickListener);
-                    }
-                }, 750);
-                return false;
+                return true;
             }
         });
     }

@@ -7,15 +7,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
@@ -49,7 +46,8 @@ public class WordsBookFrag extends Fragment {
     private View mView;
     WordlistDB db;
     List<Map<String, Object>> lists;
-    SimpleAdapter adapter;
+    ListView listView;
+    WordBookListAdapter adapter;
     private Context mContext;
     Map<String, Object> lastRemovedItem;
     Boolean isAutoTranslate;
@@ -136,21 +134,8 @@ public class WordsBookFrag extends Fragment {
     @Override
     public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        listView = view.findViewById(R.id.lisWords);
         loadList(null);
-        ((ListView) view.findViewById(R.id.lisWords)).setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, final View view, final int i, long l) {
-                new ModiDiaBuilder(mContext, isAutoTranslate).built(((TextView) ((ConstraintLayout) view).getChildAt(0)).getText().toString(),
-                        ((TextView) ((ConstraintLayout) view).getChildAt(1)).getText().toString(), new ModiDiaBuilder.UpdateUIInterface() {
-                            @Override
-                            public void updateUI(String word, String meaning) {
-                                db.modifyData(Integer.valueOf(((TextView) ((ConstraintLayout) view).getChildAt(2)).getText().toString()), word, meaning);
-                                ((TextView) ((ConstraintLayout) view).getChildAt(0)).setText(word);
-                                ((TextView) ((ConstraintLayout) view).getChildAt(1)).setText(meaning);
-                            }
-                        });
-            }
-        });
     }
 
     boolean isNull(Object o) {
@@ -163,6 +148,8 @@ public class WordsBookFrag extends Fragment {
 
     public void setAutoTranslate(Boolean autoTranslate) {
         isAutoTranslate = autoTranslate;
+        if (adapter != null)
+            adapter.setAutoTranslate(isAutoTranslate);
     }
 
     String timestampToDate(long t, long current, boolean isShowDate) {
@@ -197,9 +184,10 @@ public class WordsBookFrag extends Fragment {
     public void loadList(final MenuItem item) {
         final View view = getView();
         lists = new ArrayList<>();
-        adapter = new SimpleAdapter(mContext, lists, R.layout.wb_item_template, new String[]{"words", "meanings", "rate", "days_ago", "add_date", "id"},
+        adapter = new WordBookListAdapter(mContext, lists, R.layout.wb_item_template, new String[]{"words", "meanings", "rate", "days_ago", "add_date", "id"},
                 new int[]{R.id.tvWBItemWord, R.id.tvWBItemMeaning, R.id.tvWBItemRate, R.id.tvWBItemDaysAgo, R.id.tvWBItemAddDate, R.id.tvWBItemId});
-        ((ListView) view.findViewById(R.id.lisWords)).setAdapter(adapter);
+        adapter.newInstance(db, isAutoTranslate);
+        listView.setAdapter(adapter);
         class LoadWordsTask extends AsyncTask<String, Integer, String> {
             private int len;
             private List<Map<String, Object>> tmpList = new ArrayList<>();
@@ -263,13 +251,30 @@ public class WordsBookFrag extends Fragment {
     public void removeItem(int indexFromLast) {
         lastRemovedItem = lists.get(lists.size() - indexFromLast - 1);
         lists.remove(lists.size() - indexFromLast - 1);
+        adapter.notifyDataSetChanged();
         ((TextView) mView.findViewById(R.id.tvWordsConut)).setText("共" + String.valueOf(--wordsCount) + "个单词");
     }
 
     public void undoRemove(int id) {
         lastRemovedItem.put("id", id);
         lists.add(lastRemovedItem);
+        adapter.notifyDataSetChanged();
         ((TextView) mView.findViewById(R.id.tvWordsConut)).setText("共" + String.valueOf(++wordsCount) + "个单词");
+    }
+
+    public void modifyItem(int indexFromLast, String word, String meaning) {
+        Map<String, Object> item = lists.get(lists.size() - indexFromLast - 1);
+        item.put("words", word);
+        item.put("meanings", meaning);
+        adapter.notifyDataSetChanged();
+    }
+
+    boolean onPressBack() {
+        if (adapter.isEditMode()) {
+            adapter.exitEditMode();
+            return false;
+        } else
+            return true;
     }
 
 }
