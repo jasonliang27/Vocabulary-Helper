@@ -22,6 +22,9 @@ public class WordBookListAdapter extends SimpleAdapter {
     private WordlistDB db;
     private boolean isAutoTranslate;
     private View.OnClickListener onClickModifyItem;
+    WordsBookFrag.SetWBEditBarInterface setWBEditBarInterface;
+    int selectedItemCount = 0;
+    private boolean isSelectAll = false;
 
     WordBookListAdapter(Context context, List<? extends Map<String, ?>> data, int resource, String[] from, int[] to) {
         super(context, data, resource, from, to);
@@ -57,7 +60,7 @@ public class WordBookListAdapter extends SimpleAdapter {
         } else
             mViewHolder = (ViewHolder) convertView.getTag();
 
-        if (isEditMode)
+        if (isEditMode)//设置项目单击事件
             convertView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -71,6 +74,7 @@ public class WordBookListAdapter extends SimpleAdapter {
         convertView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
+                //进入编辑模式
                 setEditMode(true);
                 setCheckByIndex(i, true);
                 return true;
@@ -80,6 +84,13 @@ public class WordBookListAdapter extends SimpleAdapter {
         mViewHolder.cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (isEditMode) {
+                    if (b)//更新标题栏数字
+                        selectedItemCount++;
+                    else
+                        selectedItemCount--;
+                    setWBEditBarInterface.updateTitle(selectedItemCount);
+                }
                 isChecked.put(i, b);
             }
         });
@@ -91,9 +102,10 @@ public class WordBookListAdapter extends SimpleAdapter {
         isChecked.put(index, b);
     }
 
-    void newInstance(WordlistDB db, boolean isAutoTranslate) {
+    void newInstance(WordlistDB db, boolean isAutoTranslate, WordsBookFrag.SetWBEditBarInterface setWBEditBarInterface) {
         this.db = db;
         this.isAutoTranslate = isAutoTranslate;
+        this.setWBEditBarInterface = setWBEditBarInterface;
     }
 
     void setAutoTranslate(boolean autoTranslate) {
@@ -105,17 +117,36 @@ public class WordBookListAdapter extends SimpleAdapter {
     }
 
     private void setEditMode(boolean editMode) {
+        setActionBar(editMode);
         isEditMode = editMode;
         notifyDataSetChanged();
     }
 
     void exitEditMode() {
+        //退出编辑模式
         isChecked.clear();
+        selectedItemCount = 0;
+        isSelectAll = false;
         setEditMode(false);
     }
 
     class ViewHolder {
         CheckBox cb;
+    }
+
+    void setActionBar(boolean isEditMode) {
+        setWBEditBarInterface.setEditBar(isEditMode);
+    }
+
+    void setSelectAll() {
+        for (int i = 0; i < getCount(); i++)
+            setCheckByIndex(i, !isSelectAll);
+        notifyDataSetChanged();
+        isSelectAll = !isSelectAll;
+    }
+
+    public boolean isSelectAll() {
+        return isSelectAll;
     }
 
 }

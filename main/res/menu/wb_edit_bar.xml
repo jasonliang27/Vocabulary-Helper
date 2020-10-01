@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/mWBMSelectAll"
+        android:title="全选"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/mWBMDelete"
+        android:icon="@drawable/ic_trash_outline"
+        android:title="删除"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/mWBClearData"
+        android:icon="@drawable/ic_close_outline"
+        android:title="清除数据"
+        app:showAsAction="always" />
+</menu>

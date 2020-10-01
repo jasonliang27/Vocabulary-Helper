@@ -52,6 +52,7 @@ public class WordsBookFrag extends Fragment {
     Map<String, Object> lastRemovedItem;
     Boolean isAutoTranslate;
     int wordsCount;
+    SetWBEditBarInterface setWBEditBarInterface;
 
     public WordsBookFrag() {
         // Required empty public constructor
@@ -142,8 +143,10 @@ public class WordsBookFrag extends Fragment {
         return o == null;
     }
 
-    public void setDataBase(WordlistDB db) {
+    void newInstance(WordlistDB db, Boolean autoTranslate, SetWBEditBarInterface setWBEditBarInterface) {
         this.db = db;
+        setAutoTranslate(autoTranslate);
+        this.setWBEditBarInterface = setWBEditBarInterface;
     }
 
     public void setAutoTranslate(Boolean autoTranslate) {
@@ -159,7 +162,7 @@ public class WordsBookFrag extends Fragment {
         else if (isShowDate)
             return new SimpleDateFormat("yyyy/MM/dd").format(new Date(Long.parseLong(String.valueOf(t))));
         else
-            return String.valueOf(daysago) + "天前";
+            return daysago + "天前";
     }
 
     public void addItem(int id) {
@@ -178,7 +181,7 @@ public class WordsBookFrag extends Fragment {
                 adapter.notifyDataSetChanged();
             }
         });
-        ((TextView) mView.findViewById(R.id.tvWordsConut)).setText("共" + String.valueOf(++wordsCount) + "个单词");
+        ((TextView) mView.findViewById(R.id.tvWordsConut)).setText("共" + ++wordsCount + "个单词");
     }
 
     public void loadList(final MenuItem item) {
@@ -186,7 +189,7 @@ public class WordsBookFrag extends Fragment {
         lists = new ArrayList<>();
         adapter = new WordBookListAdapter(mContext, lists, R.layout.wb_item_template, new String[]{"words", "meanings", "rate", "days_ago", "add_date", "id"},
                 new int[]{R.id.tvWBItemWord, R.id.tvWBItemMeaning, R.id.tvWBItemRate, R.id.tvWBItemDaysAgo, R.id.tvWBItemAddDate, R.id.tvWBItemId});
-        adapter.newInstance(db, isAutoTranslate);
+        adapter.newInstance(db, isAutoTranslate, setWBEditBarInterface);
         listView.setAdapter(adapter);
         class LoadWordsTask extends AsyncTask<String, Integer, String> {
             private int len;
@@ -207,7 +210,7 @@ public class WordsBookFrag extends Fragment {
                         Map<String, Object> map = new HashMap<>();
                         map.put("words", dataRow.get(WordlistDB.ColNames.word));
                         map.put("meanings", dataRow.get(WordlistDB.ColNames.meaning));
-                        map.put("rate", isNull(dataRow.get(WordlistDB.ColNames.correct_rate)) ? "" : String.valueOf(Math.round(Float.valueOf(dataRow.get(WordlistDB.ColNames.correct_rate)) * 1000) / 1000.0) + "%");
+                        map.put("rate", isNull(dataRow.get(WordlistDB.ColNames.correct_rate)) ? "" : Math.round(Float.valueOf(dataRow.get(WordlistDB.ColNames.correct_rate)) * 1000) / 1000.0 + "%");
                         map.put("days_ago", isNull(dataRow.get(WordlistDB.ColNames.test_date)) ? "从未测试" : timestampToDate(Long.valueOf(dataRow.get(WordlistDB.ColNames.test_date)), timestamp, false));
                         map.put("add_date", timestampToDate(Long.valueOf(dataRow.get(WordlistDB.ColNames.add_date)), timestamp, true));
                         map.put("id", String.valueOf(Integer.valueOf(dataRow.get(WordlistDB.ColNames.id))));//DEBUG
@@ -239,7 +242,7 @@ public class WordsBookFrag extends Fragment {
                 view.findViewById(R.id.tvWBStatus).setVisibility(View.INVISIBLE);
                 lists.addAll(tmpList);
                 adapter.notifyDataSetChanged();
-                ((TextView) view.findViewById(R.id.tvWordsConut)).setText("共" + String.valueOf(wordsCount = adapter.getCount()) + "个单词");
+                ((TextView) view.findViewById(R.id.tvWordsConut)).setText("共" + (wordsCount = adapter.getCount()) + "个单词");
                 view.findViewById(R.id.lisWords).setVisibility(View.VISIBLE);
                 if (item != null)
                     item.setEnabled(true);
@@ -252,14 +255,14 @@ public class WordsBookFrag extends Fragment {
         lastRemovedItem = lists.get(lists.size() - indexFromLast - 1);
         lists.remove(lists.size() - indexFromLast - 1);
         adapter.notifyDataSetChanged();
-        ((TextView) mView.findViewById(R.id.tvWordsConut)).setText("共" + String.valueOf(--wordsCount) + "个单词");
+        ((TextView) mView.findViewById(R.id.tvWordsConut)).setText("共" + --wordsCount + "个单词");
     }
 
     public void undoRemove(int id) {
         lastRemovedItem.put("id", id);
         lists.add(lastRemovedItem);
         adapter.notifyDataSetChanged();
-        ((TextView) mView.findViewById(R.id.tvWordsConut)).setText("共" + String.valueOf(++wordsCount) + "个单词");
+        ((TextView) mView.findViewById(R.id.tvWordsConut)).setText("共" + ++wordsCount + "个单词");
     }
 
     public void modifyItem(int indexFromLast, String word, String meaning) {
@@ -277,4 +280,13 @@ public class WordsBookFrag extends Fragment {
             return true;
     }
 
+    public WordBookListAdapter getAdapter() {
+        return adapter;
+    }
+
+    public interface SetWBEditBarInterface {
+        void setEditBar(boolean isEditMode);
+
+        void updateTitle(int n);
+    }
 }

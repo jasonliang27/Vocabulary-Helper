@@ -76,7 +76,6 @@ class ModiDiaBuilder extends AlertDialog.Builder {
                         else {
                             updateUIInterface.updateUI(((EditText) vModiDia.findViewById(R.id.etModiDiaWord)).getText().toString(),
                                     ((EditText) vModiDia.findViewById(R.id.etModiDiaMeaning)).getText().toString());
-                            modify();
                         }
                     }
                 })
@@ -92,7 +91,6 @@ class ModiDiaBuilder extends AlertDialog.Builder {
                     else {
                         updateUIInterface.updateUI(((EditText) vModiDia.findViewById(R.id.etModiDiaWord)).getText().toString(),
                                 ((EditText) vModiDia.findViewById(R.id.etModiDiaMeaning)).getText().toString());
-                        modify();
                     }
                 }
                 alertDialog.dismiss();
@@ -107,7 +105,4 @@ class ModiDiaBuilder extends AlertDialog.Builder {
                 500);
     }
 
-    void modify() {
-        //TODO 修改数据
-    }
 }

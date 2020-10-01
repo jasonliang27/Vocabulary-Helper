@@ -1,5 +1,6 @@
 package com.example.liang.vocabularyhelper;
 
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -11,6 +12,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -96,8 +98,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        menu.getItem(0).setChecked(isAutoTranslate);
+        initMenu(menu);
         optionMenu = menu;
         return true;
     }
@@ -111,6 +112,7 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         switch (id) {
+            //主菜单
             case R.id.mAutoTranslate:
                 item.setChecked(setAutoTranslate(!item.isChecked()));
                 getSharedPreferences("data", MODE_PRIVATE).edit().putBoolean("isAutoTranslate", isAutoTranslate).apply();
@@ -121,6 +123,18 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.action_settings:
                 //TODO 设置
+                break;
+
+            //编辑菜单
+            case R.id.mWBMSelectAll:
+                item.setTitle(!wordsBookFrag.adapter.isSelectAll() ? "取消全选" : "全选");
+                wordsBookFrag.adapter.setSelectAll();
+                break;
+            case R.id.mWBMDelete:
+                //TODO 删除项目
+                break;
+            case R.id.mWBClearData:
+                //TODO 清除数据
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -133,6 +147,9 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id != currentPage) {
+            if (wordsBookFrag != null)
+                if (wordsBookFrag.getAdapter().isEditMode())
+                    wordsBookFrag.getAdapter().exitEditMode();
             optionMenu.getItem(1).setVisible(false);
             android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             if (currentPage == R.id.nav_quickadd)
@@ -146,20 +163,11 @@ public class MainActivity extends AppCompatActivity
             } else if (id == R.id.nav_wordsbook) {
                 setTitle("单词本");
                 if (wordsBookFrag == null) {
-                    wordsBookFrag = new WordsBookFrag();
-                    wordsBookFrag.setDataBase(db);
-                    wordsBookFrag.setAutoTranslate(isAutoTranslate);
-                    quickAddFrag.setWordsBookFrag(wordsBookFrag);
+                    initWordBookFrag();
                     fragmentTransaction.add(R.id.fragment_main, wordsBookFrag);
-
-                    /*android.support.v7.app.ActionBar actionBar = getSupportActionBar();
-                    if (actionBar != null) {
-                        actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM); //Enable自定义的View
-                        actionBar.setCustomView(R.layout.modify_actionbar_layout);//设置自定义的布局：actionbar_custom
-                    }*///TODO ActionBar
                 }
                 fragmentTransaction.show(currentFragment = wordsBookFrag);
-                optionMenu.getItem(1).setVisible(true);
+//DEBUG                optionMenu.getItem(1).setVisible(true);
             } else if (id == R.id.nav_slideshow) {
 
             } else if (id == R.id.nav_manage) {
@@ -189,6 +197,52 @@ public class MainActivity extends AppCompatActivity
             wordsBookFrag.setAutoTranslate(b);
         isAutoTranslate = b;
         return b;
+    }
+
+    void initMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        menu.getItem(0).setChecked(isAutoTranslate);
+    }
+
+    void initWordBookFrag() {
+        final Toolbar toolbar = ((Toolbar) findViewById(R.id.toolbar));
+        final Drawable navigationIconDrawable = toolbar.getNavigationIcon();
+        wordsBookFrag = new WordsBookFrag();
+        wordsBookFrag.newInstance(db, isAutoTranslate, new WordsBookFrag.SetWBEditBarInterface() {
+            @Override
+            public void setEditBar(boolean isEditMode) {//修改单词本编辑栏状态
+                if (isEditMode) {
+                    optionMenu.clear();
+                    getMenuInflater().inflate(R.menu.wb_edit_bar, optionMenu);
+                    setTitle("");
+                    toolbar.setNavigationIcon(R.drawable.ic_arrow_back_outline);
+                    toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            wordsBookFrag.adapter.exitEditMode();
+                        }
+                    });
+                    //findViewById(R.id.toolbar).setBackgroundColor(getColor(R.color.colorDark));//设置toolbar颜色
+                } else {
+                    optionMenu.clear();
+                    initMenu(optionMenu);
+                    setTitle("单词本");
+                    toolbar.setNavigationIcon(navigationIconDrawable);
+                    toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            ((DrawerLayout) findViewById(R.id.drawer_layout)).openDrawer(Gravity.START);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void updateTitle(int n) {
+                setTitle(String.format("已选中 %d 项", n));
+            }
+        });
+        quickAddFrag.setWordsBookFrag(wordsBookFrag);
     }
 }
 
