@@ -46,11 +46,8 @@ class WordlistDB {
         values.put(ColNames.word, word);
         values.put(ColNames.meaning, meaning);
         values.put(ColNames.test_times, 0);
-        values.put(ColNames.test_date, 0);
         values.putNull(ColNames.correct_times);
         values.putNull(ColNames.correct_rate);
-        values.putNull(ColNames.test_date);
-        values.putNull(ColNames.learn_date);
         values.putNull(ColNames.test_date);
         values.putNull(ColNames.learn_date);
         values.put(ColNames.add_date, timestamp);
@@ -67,12 +64,23 @@ class WordlistDB {
         mdb.delete(TABLE, ColNames.id + "=?", new String[]{String.valueOf(id)});
     }
 
+
+    void clearItemData(int id) {
+        ContentValues values = new ContentValues();
+        values.put(ColNames.test_times, 0);
+        values.putNull(ColNames.correct_times);
+        values.putNull(ColNames.correct_rate);
+        values.putNull(ColNames.test_date);
+        values.putNull(ColNames.learn_date);
+        mdb.update(TABLE, values, ColNames.id + "=?", new String[]{String.valueOf(id)});
+    }
+
     void getAllItems(ItemHandlerInterface itemHandlerInterface) {
         getItem("SELECT * FROM " + TABLE, itemHandlerInterface);
     }
 
     void getItemById(int id, ItemHandlerInterface itemHandlerInterface) {
-        getItem("SELECT * FROM " + TABLE + " WHERE " + ColNames.id + "=" + String.valueOf(id), itemHandlerInterface);
+        getItem("SELECT * FROM " + TABLE + " WHERE " + ColNames.id + "=" + id, itemHandlerInterface);
     }
 
     void getItem(String sql, String[] selectionArgs, ItemHandlerInterface itemHandlerInterface) {
@@ -125,7 +133,7 @@ class WordlistDB {
         try {
             FileInputStream fis = new java.io.FileInputStream(fromfile);
             FileOutputStream fos = new FileOutputStream(tofile);
-            byte bt[] = new byte[1024];
+            byte[] bt = new byte[1024];
             int c;
             while ((c = fis.read(bt)) > 0) {
                 fos.write(bt, 0, c);
@@ -145,11 +153,11 @@ class WordlistDB {
         static String id = "id",
                 word = "words",
                 meaning = "meanings",
-                test_times = "test_times ",
+                test_times = "test_times",
                 correct_times = "correct_times",
                 correct_rate = "correct_rate",
-                learn_date = "learn_date ",
-                test_date = "test_date ",
+                learn_date = "learn_date",
+                test_date = "test_date",
                 add_date = "add_date";
     }
 }

@@ -131,10 +131,10 @@ public class MainActivity extends AppCompatActivity
                 wordsBookFrag.adapter.setSelectAll();
                 break;
             case R.id.mWBMDelete:
-                //TODO 删除项目
+                wordsBookFrag.deleteSelectedItem();
                 break;
             case R.id.mWBClearData:
-                //TODO 清除数据
+                wordsBookFrag.clearSelectedItemData();
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -205,7 +205,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     void initWordBookFrag() {
-        final Toolbar toolbar = ((Toolbar) findViewById(R.id.toolbar));
+        final Toolbar toolbar = findViewById(R.id.toolbar);
         final Drawable navigationIconDrawable = toolbar.getNavigationIcon();
         wordsBookFrag = new WordsBookFrag();
         wordsBookFrag.newInstance(db, isAutoTranslate, new WordsBookFrag.SetWBEditBarInterface() {

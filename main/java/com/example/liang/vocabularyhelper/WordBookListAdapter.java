@@ -2,7 +2,6 @@ package com.example.liang.vocabularyhelper;
 
 import android.content.Context;
 import android.support.constraint.ConstraintLayout;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,26 +10,29 @@ import android.widget.CompoundButton;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class WordBookListAdapter extends SimpleAdapter {
 
+    private WordsBookFrag.SetWBEditBarInterface setWBEditBarInterface;
+    private int selectedItemCount = 0;
+    private List<Map<String, Object>> lists;
     private Context mContext;
-    private SparseBooleanArray isChecked;
+    private List<Boolean> isChecked;
     private boolean isEditMode;
     private WordlistDB db;
     private boolean isAutoTranslate;
     private View.OnClickListener onClickModifyItem;
-    WordsBookFrag.SetWBEditBarInterface setWBEditBarInterface;
-    int selectedItemCount = 0;
     private boolean isSelectAll = false;
 
-    WordBookListAdapter(Context context, List<? extends Map<String, ?>> data, int resource, String[] from, int[] to) {
+    WordBookListAdapter(Context context, List<Map<String, Object>> data, int resource, String[] from, int[] to) {
         super(context, data, resource, from, to);
         mContext = context;
-        isChecked = new SparseBooleanArray();
+        isChecked = new ArrayList<>();
         isEditMode = false;
+        lists = data;
         onClickModifyItem = new View.OnClickListener() {
             @Override
             public void onClick(final View view) {
@@ -55,7 +57,7 @@ public class WordBookListAdapter extends SimpleAdapter {
             mViewHolder = new ViewHolder();
             mViewHolder.cb = convertView.findViewById(R.id.cbWBItemCheck);
             convertView.setTag(mViewHolder);
-            isChecked.put(i, false);
+            isChecked.add(i, false);
             convertView.setOnClickListener(onClickModifyItem);
         } else
             mViewHolder = (ViewHolder) convertView.getTag();
@@ -91,7 +93,7 @@ public class WordBookListAdapter extends SimpleAdapter {
                         selectedItemCount--;
                     setWBEditBarInterface.updateTitle(selectedItemCount);
                 }
-                isChecked.put(i, b);
+                isChecked.set(i, b);
             }
         });
         mViewHolder.cb.setChecked(isChecked.get(i));
@@ -99,7 +101,7 @@ public class WordBookListAdapter extends SimpleAdapter {
     }
 
     private void setCheckByIndex(int index, boolean b) {
-        isChecked.put(index, b);
+        isChecked.set(index, b);
     }
 
     void newInstance(WordlistDB db, boolean isAutoTranslate, WordsBookFrag.SetWBEditBarInterface setWBEditBarInterface) {
@@ -124,14 +126,11 @@ public class WordBookListAdapter extends SimpleAdapter {
 
     void exitEditMode() {
         //退出编辑模式
-        isChecked.clear();
+        for (int i = 0; i < getCount(); i++)
+            isChecked.set(i, false);
         selectedItemCount = 0;
         isSelectAll = false;
         setEditMode(false);
-    }
-
-    class ViewHolder {
-        CheckBox cb;
     }
 
     void setActionBar(boolean isEditMode) {
@@ -147,6 +146,38 @@ public class WordBookListAdapter extends SimpleAdapter {
 
     public boolean isSelectAll() {
         return isSelectAll;
+    }
+
+    public int getSelectedItemCount() {
+        return selectedItemCount;
+    }
+
+    void deleteSelectedItem() {
+        for (int j = 0; j < getCount(); j++)
+            if (isChecked.get(j)) {
+                db.removeItem(Integer.parseInt((String) lists.get(j).get("id")));
+                lists.remove(j);
+                isChecked.remove(j);
+                j--;
+            }
+        notifyDataSetChanged();
+        exitEditMode();
+    }
+
+    void clearSelectedItemData() {
+        for (int j = 0; j < getCount(); j++)
+            if (isChecked.get(j)) {
+                db.clearItemData(Integer.parseInt((String) lists.get(j).get("id")));
+                lists.get(j).put("rate", "");
+                lists.get(j).put("days_ago", "从未测试");
+
+            }
+        notifyDataSetChanged();
+        exitEditMode();
+    }
+
+    class ViewHolder {
+        CheckBox cb;
     }
 
 }

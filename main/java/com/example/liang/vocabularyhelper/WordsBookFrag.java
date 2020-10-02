@@ -1,7 +1,9 @@
 package com.example.liang.vocabularyhelper;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -242,7 +245,7 @@ public class WordsBookFrag extends Fragment {
                 view.findViewById(R.id.tvWBStatus).setVisibility(View.INVISIBLE);
                 lists.addAll(tmpList);
                 adapter.notifyDataSetChanged();
-                ((TextView) view.findViewById(R.id.tvWordsConut)).setText("共" + (wordsCount = adapter.getCount()) + "个单词");
+                updateCount();
                 view.findViewById(R.id.lisWords).setVisibility(View.VISIBLE);
                 if (item != null)
                     item.setEnabled(true);
@@ -288,5 +291,46 @@ public class WordsBookFrag extends Fragment {
         void setEditBar(boolean isEditMode);
 
         void updateTitle(int n);
+    }
+
+    void updateCount() {
+        ((TextView) mView.findViewById(R.id.tvWordsConut)).setText("共" + (wordsCount = adapter.getCount()) + "个单词");
+    }
+
+    void deleteSelectedItem() {
+        if (adapter.getSelectedItemCount() == 0) {
+            Toast.makeText(mContext, "未选中项目", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        new AlertDialog.Builder(mContext)
+                .setTitle(String.format("确定删除 %d 个项目？", adapter.getSelectedItemCount()))
+                .setMessage("此操作不可恢复。")
+                .setNegativeButton("取消", null)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        adapter.deleteSelectedItem();
+                        updateCount();
+                    }
+                })
+                .show();
+    }
+
+    void clearSelectedItemData() {
+        if (adapter.getSelectedItemCount() == 0) {
+            Toast.makeText(mContext, "未选中项目", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        new AlertDialog.Builder(mContext)
+                .setTitle(String.format("确定清除 %d 个项目的统计数据？", adapter.getSelectedItemCount()))
+                .setMessage("此操作不可恢复。")
+                .setNegativeButton("取消", null)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        adapter.clearSelectedItemData();
+                    }
+                })
+                .show();
     }
 }
