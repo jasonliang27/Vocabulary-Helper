@@ -57,10 +57,13 @@ public class WordBookListAdapter extends SimpleAdapter {
             mViewHolder = new ViewHolder();
             mViewHolder.cb = convertView.findViewById(R.id.cbWBItemCheck);
             convertView.setTag(mViewHolder);
-            isChecked.add(i, false);
+            //isChecked.add(i, false);
             convertView.setOnClickListener(onClickModifyItem);
         } else
             mViewHolder = (ViewHolder) convertView.getTag();
+
+        if (isChecked.size() <= i)
+            isChecked.add(i, false);
 
         if (isEditMode)//设置项目单击事件
             convertView.setOnClickListener(new View.OnClickListener() {
@@ -96,7 +99,9 @@ public class WordBookListAdapter extends SimpleAdapter {
                 isChecked.set(i, b);
             }
         });
-        mViewHolder.cb.setChecked(isChecked.get(i));
+
+        if (isEditMode)
+            mViewHolder.cb.setChecked(isChecked.get(i));
         return super.getView(i, convertView, viewGroup);
     }
 
@@ -150,6 +155,14 @@ public class WordBookListAdapter extends SimpleAdapter {
 
     public int getSelectedItemCount() {
         return selectedItemCount;
+    }
+
+    void removeItem(int indexFromLast) {
+        isChecked.remove(isChecked.size() - indexFromLast - 1);
+    }
+
+    void undoRemove() {
+        isChecked.add(false);
     }
 
     void deleteSelectedItem() {

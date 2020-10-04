@@ -1,5 +1,9 @@
 package com.example.liang.vocabularyhelper;
 
+import android.Manifest;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -7,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -17,17 +22,20 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         QuickAddFrag.OnFragmentInteractionListener,
         WordsBookFrag.OnFragmentInteractionListener {
 
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
     boolean isAutoTranslate;
     QuickAddFrag quickAddFrag = new QuickAddFrag();
     WordsBookFrag wordsBookFrag;
+    SettingsFrag settingsFrag;
     int currentPage;
-    android.support.v4.app.Fragment currentFragment;
+    Fragment currentFragment;
     WordlistDB db;
     Menu optionMenu;
 
@@ -68,18 +76,20 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         setTitle("快速添加");
-        ((NavigationView)findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_quickadd);
+        ((NavigationView) findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_quickadd);
         setAutoTranslate(getSharedPreferences("data", MODE_PRIVATE).getBoolean("isAutoTranslate", true));
         currentPage = R.id.nav_quickadd;
 
-        android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
 
         fragmentTransaction.add(R.id.fragment_main, quickAddFrag);
         fragmentTransaction.show(currentFragment = quickAddFrag);
         fragmentTransaction.commit();
 
+        requestExternalStoragePermission();
+
         db = new WordlistDB(this);
-        //Log.d("dbdbdb",String.valueOf(db.removeAll()));
+        //Log.d("dbdbdb",String.valueOf(db.resetDB()));
         quickAddFrag.setDataBase(db);
     }
 
@@ -117,13 +127,13 @@ public class MainActivity extends AppCompatActivity
                 item.setChecked(setAutoTranslate(!item.isChecked()));
                 getSharedPreferences("data", MODE_PRIVATE).edit().putBoolean("isAutoTranslate", isAutoTranslate).apply();
                 break;
-            case R.id.mRefresh:
+            /*case R.id.mRefresh:
                 item.setEnabled(false);
                 wordsBookFrag.loadList(item);
-                break;
-            case R.id.action_settings:
+                break;*/
+            /*case R.id.action_settings:
                 //TODO 设置
-                break;
+                break;*/
 
             //编辑菜单
             case R.id.mWBMSelectAll:
@@ -151,7 +161,7 @@ public class MainActivity extends AppCompatActivity
                 if (wordsBookFrag.getAdapter().isEditMode())
                     wordsBookFrag.getAdapter().exitEditMode();
             optionMenu.getItem(1).setVisible(false);
-            android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
             if (currentPage == R.id.nav_quickadd)
                 fragmentTransaction.remove(currentFragment);
             else
@@ -170,8 +180,20 @@ public class MainActivity extends AppCompatActivity
 //DEBUG                optionMenu.getItem(1).setVisible(true);
             } else if (id == R.id.nav_slideshow) {
 
-            } else if (id == R.id.nav_manage) {
-
+            } else if (id == R.id.nav_settings) {
+                setTitle("设置");
+                if (settingsFrag == null) {
+                    settingsFrag = new SettingsFrag();
+                    settingsFrag.newInstance(db, new SettingsFrag.DBModifiedHandler() {
+                        @Override
+                        public void onModified() {
+                            if (wordsBookFrag != null)
+                                wordsBookFrag.loadList(null);
+                        }
+                    });
+                    fragmentTransaction.add(R.id.fragment_main, settingsFrag);
+                }
+                fragmentTransaction.show(currentFragment = settingsFrag);
             } else if (id == R.id.nav_share) {
 
             } else if (id == R.id.nav_send) {
@@ -198,6 +220,31 @@ public class MainActivity extends AppCompatActivity
         isAutoTranslate = b;
         return b;
     }
+
+    private void requestExternalStoragePermission() {
+        String[] PERMISSIONS_STORAGE = {
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        int permission = ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        for (int i : grantResults)
+            if (i == -1) {
+                Toast.makeText(this, "未授予权限。", Toast.LENGTH_LONG).show();
+                finish();
+                break;
+            }
+    }
+
 
     void initMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);

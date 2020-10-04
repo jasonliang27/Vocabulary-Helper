@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="导入/导出">
+
+        <Preference
+            android:key="prImport"
+            android:title="导入数据" />
+        <Preference
+            android:key="prExport"
+            android:title="导出数据" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="数据库">
+
+        <Preference
+            android:key="prResetDB"
+            android:title="重置数据库" />
+    </PreferenceCategory>
+</PreferenceScreen>

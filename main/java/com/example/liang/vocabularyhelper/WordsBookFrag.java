@@ -2,6 +2,7 @@ package com.example.liang.vocabularyhelper;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
@@ -9,7 +10,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -187,7 +187,7 @@ public class WordsBookFrag extends Fragment {
         ((TextView) mView.findViewById(R.id.tvWordsConut)).setText("共" + ++wordsCount + "个单词");
     }
 
-    public void loadList(final MenuItem item) {
+    public void loadList(final MenuItem refreshButton) {
         final View view = getView();
         lists = new ArrayList<>();
         adapter = new WordBookListAdapter(mContext, lists, R.layout.wb_item_template, new String[]{"words", "meanings", "rate", "days_ago", "add_date", "id"},
@@ -247,8 +247,8 @@ public class WordsBookFrag extends Fragment {
                 adapter.notifyDataSetChanged();
                 updateCount();
                 view.findViewById(R.id.lisWords).setVisibility(View.VISIBLE);
-                if (item != null)
-                    item.setEnabled(true);
+                if (refreshButton != null)
+                    refreshButton.setEnabled(true);
             }
         }
         new LoadWordsTask().execute();
@@ -257,13 +257,15 @@ public class WordsBookFrag extends Fragment {
     public void removeItem(int indexFromLast) {
         lastRemovedItem = lists.get(lists.size() - indexFromLast - 1);
         lists.remove(lists.size() - indexFromLast - 1);
+        adapter.removeItem(indexFromLast);
         adapter.notifyDataSetChanged();
         ((TextView) mView.findViewById(R.id.tvWordsConut)).setText("共" + --wordsCount + "个单词");
     }
 
     public void undoRemove(int id) {
-        lastRemovedItem.put("id", id);
+        lastRemovedItem.put("id", String.valueOf(id));
         lists.add(lastRemovedItem);
+        adapter.undoRemove();
         adapter.notifyDataSetChanged();
         ((TextView) mView.findViewById(R.id.tvWordsConut)).setText("共" + ++wordsCount + "个单词");
     }
@@ -304,7 +306,7 @@ public class WordsBookFrag extends Fragment {
         }
         new AlertDialog.Builder(mContext)
                 .setTitle(String.format("确定删除 %d 个项目？", adapter.getSelectedItemCount()))
-                .setMessage("此操作不可恢复。")
+                .setMessage(getString(R.string.cannot_undo))
                 .setNegativeButton("取消", null)
                 .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
@@ -323,7 +325,7 @@ public class WordsBookFrag extends Fragment {
         }
         new AlertDialog.Builder(mContext)
                 .setTitle(String.format("确定清除 %d 个项目的统计数据？", adapter.getSelectedItemCount()))
-                .setMessage("此操作不可恢复。")
+                .setMessage(getString(R.string.cannot_undo))
                 .setNegativeButton("取消", null)
                 .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override

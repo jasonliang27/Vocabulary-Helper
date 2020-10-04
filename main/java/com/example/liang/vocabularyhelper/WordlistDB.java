@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,6 +24,11 @@ class WordlistDB {
     WordlistDB(Context context) {
         mContext = context;
         mdb = (new DatabaseHelper(mContext, DATABASE, null, 1)).getWritableDatabase();
+        createTable();
+        timestamp = System.currentTimeMillis();
+    }
+
+    private void createTable() {
         mdb.execSQL("create table if not exists wordlist(\n" +
                 "    " + ColNames.id + " INTEGER primary key autoincrement,\n" +
                 "     " + ColNames.word + " VARCHAR not null,\n" +
@@ -34,7 +40,6 @@ class WordlistDB {
                 "     " + ColNames.learn_date + " LONG,\n" +
                 "     " + ColNames.add_date + " LONG\n" +
                 "     )");
-        timestamp = System.currentTimeMillis();
     }
 
     public SQLiteDatabase getDB() {
@@ -56,8 +61,9 @@ class WordlistDB {
         return getLastId();
     }
 
-    int removeAll() {
-        return mdb.delete(TABLE, null, null);
+    void resetDB() {
+        mdb.execSQL("DROP TABLE " + TABLE);
+        createTable();
     }
 
     void removeItem(int id) {
@@ -126,10 +132,23 @@ class WordlistDB {
     }
 
     void exportDB(/*String dir*/) {
-        copyFile(mdb.getPath(), Environment.getExternalStorageDirectory() + File.separator + "VocabularyHelper" + File.separator + "db");
+        String target = Environment.getExternalStorageDirectory() + File.separator + "VocabularyHelper" + File.separator + "db";
+        if (copyFile(mdb.getPath(), target))
+            Toast.makeText(mContext, "数据库已导出到 " + target, Toast.LENGTH_LONG).show();
     }
 
-    private void copyFile(String fromfile, String tofile) {
+    void importDB(/*String dir*/) {
+        String target = Environment.getExternalStorageDirectory() + File.separator + "VocabularyHelper" + File.separator + "db";
+        String oriPath = mdb.getPath();
+        mdb.close();
+        (new File(oriPath)).delete();
+        if (copyFile(target, oriPath))
+            mdb = (new DatabaseHelper(mContext, DATABASE, null, 1)).getWritableDatabase();
+        createTable();
+        Toast.makeText(mContext, "已从 " + target + " 导入数据库", Toast.LENGTH_LONG).show();
+    }
+
+    private boolean copyFile(String fromfile, String tofile) {
         try {
             FileInputStream fis = new java.io.FileInputStream(fromfile);
             FileOutputStream fos = new FileOutputStream(tofile);
@@ -140,8 +159,11 @@ class WordlistDB {
             }
             fis.close();
             fos.close();
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
+            Toast.makeText(mContext, "未授予权限", Toast.LENGTH_SHORT).show();
+            return false;
         }
     }
 

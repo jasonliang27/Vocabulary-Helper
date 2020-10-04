@@ -1,6 +1,7 @@
 package com.example.liang.vocabularyhelper;
 
 import android.annotation.SuppressLint;
+import android.app.Fragment;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,7 +9,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -182,7 +182,7 @@ public class QuickAddFrag extends Fragment {
 
     public void addHistoryItem(Context context) {
         if (etWord.getText().toString().equals("") || etMeaning.getText().toString().equals("")) {
-            Toast.makeText(context, "单词或翻译不能为空", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "单词或翻译不能为空", Toast.LENGTH_SHORT).show();
             return;
         }
         String word = etWord.getText().toString();
